@@ -5,20 +5,24 @@ import os
 import logging
 from botocore.exceptions import ClientError
 
+
 # Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
 
 # Initialize AWS clients
 # This will use the IAM Role assigned to the Lambda function
 polly = boto3.client('polly')
 s3 = boto3.client('s3')
 
+
 # Define the S3 bucket name from environment variables
 # You must configure this variable in the Lambda function's settings
 # Example: S3_BUCKET_NAME = your-polly-audio-bucket
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 REGION = os.environ.get('AWS_REGION') # Automatically populated by AWS Lambda
+
 
 def lambda_handler(event, context):
     """
@@ -28,6 +32,7 @@ def lambda_handler(event, context):
         # Log the event for debugging purposes
         logger.info(f"Received event: {json.dumps(event)}")
 
+
         # Parse the JSON body from the API Gateway event
         if 'body' not in event:
             return {
@@ -35,15 +40,17 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Missing request body'})
             }
 
+
         body = json.loads(event['body'])
         text = body.get('text')
         voice_id = body.get('voiceId')
-        
+       
         if not text or not voice_id:
             return {
                 'statusCode': 400,
                 'body': json.dumps({'error': 'Missing text or voiceId in the request body'})
             }
+
 
         # Use a mapping to get the correct Polly VoiceId from the front-end key
         voice_map = {
@@ -80,8 +87,10 @@ def lambda_handler(event, context):
             'storyteller': 'Matthew' # A suitable voice for storytelling
         }
 
+
         # Get the Polly VoiceId, defaulting to a standard voice if not found
         polly_voice_id = voice_map.get(voice_id, 'Joanna')
+
 
         # Synthesize the speech using Amazon Polly
         response = polly.synthesize_speech(
@@ -91,11 +100,14 @@ def lambda_handler(event, context):
             VoiceId=polly_voice_id
         )
 
+
         # Generate a unique file name
         file_name = f'audio/{uuid.uuid4()}.mp3'
 
+
         # Get the audio stream from the response
         stream = response['AudioStream']
+
 
         # Upload the audio stream to S3
         s3.put_object(
@@ -106,8 +118,10 @@ def lambda_handler(event, context):
             ACL='public-read' # Make the file publicly readable for playback
         )
 
+
         # Construct the public URL for the audio file
         audio_url = f'https://{S3_BUCKET_NAME}.s3.{REGION}.amazonaws.com/{file_name}'
+
 
         # Return a successful response with the audio URL
         return {
@@ -119,6 +133,7 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({'audioUrl': audio_url})
         }
+
 
     except ClientError as e:
         logger.error(f"AWS Client Error: {e}")
