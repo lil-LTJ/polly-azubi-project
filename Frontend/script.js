@@ -18,8 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const voicePitch = document.getElementById('voice-pitch');
     const voiceStyle = document.getElementById('voice-style');
 
+
     // **IMPORTANT:** Replace with your actual API Gateway URL
-    const API_GATEWAY_URL = 'https://YOUR_API_GATEWAY_ID.execute-api.YOUR_REGION.amazonaws.com/prod/convert';
+    const API_GATEWAY_URL = 'https://29evc4c0xg.execute-api.us-east-1.amazonaws.com/prod/convert';
+
 
     // Voice settings for different accents - expanded with more options
     const voiceSettings = {
@@ -56,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'storyteller': { rate: 1.0, pitch: 1.0, lang: 'en-US', demo: "Let me tell you a story. I'm a storyteller voice, expressive and dramatic.", speed: "Medium", pitchLevel: "Medium", style: "Dramatic" }
     };
 
+
     // Update voice info when selection changes
     voiceSelect.addEventListener('change', function() {
         const selectedVoice = voiceSelect.value;
@@ -67,15 +70,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
     // Initialize voice info
     voiceSpeed.innerHTML = `<i class="fas fa-tachometer-alt"></i> Speed: ${voiceSettings['american-male'].speed}`;
     voicePitch.innerHTML = `<i class="fas fa-waveform"></i> Pitch: ${voiceSettings['american-male'].pitchLevel}`;
     voiceStyle.innerHTML = `<i class="fas fa-theater-masks"></i> Style: ${voiceSettings['american-male'].style}`;
 
+
     // Variables to store audio data
     let audioURL = null;
     let translatedAudioURL = null;
     let translatedText = "";
+
 
     // Set up demo button functionality
     demoBtn.addEventListener('click', function() {
@@ -85,9 +91,11 @@ document.addEventListener('DOMContentLoaded', function() {
         convertTextToSpeech(demoText, selectedVoice);
     });
 
+
     // Convert text to speech
     convertBtn.addEventListener('click', function() {
         const text = textInput.value.trim();
+
 
         if (text === '') {
             statusMessage.textContent = 'Please enter some text to convert.';
@@ -95,9 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+
         const selectedVoice = voiceSelect.value;
         convertTextToSpeech(text, selectedVoice);
     });
+
 
     // Function to convert text to speech using an AWS backend
     async function convertTextToSpeech(text, voiceId) {
@@ -106,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         demoBtn.disabled = true;
         statusMessage.textContent = 'Converting text to speech...';
         statusMessage.classList.remove('status-error', 'status-success');
+
 
         try {
             // Send a POST request to your API Gateway endpoint
@@ -120,11 +131,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+
             const data = await response.json();
+
 
             if (data.audioUrl) {
                 audioURL = data.audioUrl;
@@ -137,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('No audio URL received from the server.');
             }
 
+
         } catch (error) {
             console.error('Text-to-speech conversion failed:', error);
             statusMessage.textContent = `Error: ${error.message}. Please try again.`;
@@ -147,9 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
     // Translate text (simulated, would require another API Gateway/Lambda)
-    translateBtn.addEventListener('click', function() {
+    translateBtn.addEventListener('click', async function() {
         const text = textInput.value.trim();
+
 
         if (text === '') {
             statusMessage.textContent = 'Please enter some text to translate.';
@@ -157,8 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+
         const sourceLang = sourceLangSelect.value;
         const targetLang = targetLangSelect.value;
+
 
         if (sourceLang === targetLang) {
             statusMessage.textContent = 'Source and target languages are the same.';
@@ -169,13 +188,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+
         statusMessage.textContent = 'Translating text...';
         statusMessage.classList.remove('status-error', 'status-success');
         translateBtn.disabled = true;
 
-        // In a real implementation, you would call an AWS Translate API here
-        setTimeout(() => {
-            translatedText = simulateTranslation(text, sourceLang, targetLang);
+
+        // Simulate translation delay
+        setTimeout(async () => {
+            translatedText = await simulateTranslation(text, sourceLang, targetLang);
             transcript.innerHTML = `
                 <p><strong>Original (${getLanguageName(sourceLang)}):</strong> ${text}</p>
                 <p class="translated-text"><strong>Translated (${getLanguageName(targetLang)}):</strong> ${translatedText}</p>
@@ -186,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadTranslatedBtn.disabled = false;
         }, 1500);
     });
+
 
     // Download audio file
     downloadBtn.addEventListener('click', function() {
@@ -204,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusMessage.classList.add('status-success');
     });
 
+
     // Download translated audio (requires separate conversion step)
     downloadTranslatedBtn.addEventListener('click', function() {
         if (!translatedText) {
@@ -214,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // This would trigger a new conversion API call with the translated text
         convertTextToSpeech(translatedText, voiceSelect.value);
     });
+
 
     // Clear text input
     clearBtn.addEventListener('click', function() {
@@ -229,27 +253,53 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadTranslatedBtn.disabled = true;
     });
 
+
     // Helper function to simulate translation (not a real API call)
-    function simulateTranslation(text, sourceLang, targetLang) {
-        const translations = {
+    async function simulateTranslation(text, sourceLang, targetLang) {
+        // Simple word-by-word translation for common words
+        const wordTranslations = {
             'en': {
-                'es': '¡Hola! Bienvenido a nuestro convertidor avanzado de texto a voz. Esta demostración muestra cómo puedes usar diferentes voces con varios acentos.',
-                'fr': 'Bonjour! Bienvenue sur notre convertisseur de texte en parole avancé. Cette démonstration montre comment vous pouvez utiliser différentes voix avec divers accents.',
-                'de': 'Hallo! Willkommen bei unserem fortschrittlichen Text-zu-Sprache-Konverter. Diese Demonstration zeigt, wie Sie verschiedene Stimmen mit verschiedenen Akzenten verwenden können.',
-                'it': 'Ciao! Benvenuto nel nostro convertitore avanzato da testo a voce. Questa dimostrazione mostra come puoi usare voci diverse con vari accenti.',
-                'ja': 'こんにちは！高度なテキスト読み上げコンバーターへようこそ。このデモンストレーションでは、さまざまなアクセントの異なる音声の使用方法を示します。',
-                'zh': '你好！欢迎使用我们先进的文本到语音转换器。本演示展示了如何使用具有不同口音的各种语音。',
-                'ru': 'Привет! Добро пожаловать в наш продвинутый преобразователь текста в речь. Эта демонстрация показывает, как вы можете использовать разные голоса с различными акцентами.',
-                'ar': 'مرحبًا! مرحبًا بك في محول النص إلى كلام المتقدم. يوضح هذا العرض كيف يمكنك استخدام أصوات مختلفة بلهجات متنوعة.',
-                'pt': 'Olá! Bem-vindo ao nosso conversor avançado de texto em fala. Esta demonstração mostra como você pode usar vozes diferentes com vários sotaques.',
-                'hi': 'नमस्ते! हमारे उन्नत पाठ-से-भाषण कनवर्टर में आपका स्वागत है। यह प्रदर्शन दिखाता है कि आप विभिन्न उच्चारणों वाली विभिन्न आवाज़ों का उपयोग कैसे कर सकते हैं।'
-            },
+                'es': {
+                    'hello': 'hola', 'hi': 'hola', 'welcome': 'bienvenido', 'to': 'a', 'our': 'nuestro',
+                    'advanced': 'avanzado', 'text': 'texto', 'speech': 'voz', 'converter': 'convertidor',
+                    'this': 'este', 'demonstration': 'demostración', 'shows': 'muestra', 'how': 'cómo',
+                    'you': 'tú', 'can': 'puedes', 'use': 'usar', 'different': 'diferentes',
+                    'voices': 'voces', 'with': 'con', 'various': 'varios', 'accents': 'acentos',
+                    'the': 'el', 'and': 'y', 'is': 'es', 'are': 'son', 'good': 'bueno', 'bad': 'malo'
+                },
+                'fr': {
+                    'hello': 'bonjour', 'hi': 'salut', 'welcome': 'bienvenue', 'to': 'à', 'our': 'notre',
+                    'advanced': 'avancé', 'text': 'texte', 'speech': 'parole', 'converter': 'convertisseur',
+                    'this': 'ce', 'demonstration': 'démonstration', 'shows': 'montre', 'how': 'comment',
+                    'you': 'vous', 'can': 'pouvez', 'use': 'utiliser', 'different': 'différentes',
+                    'voices': 'voix', 'with': 'avec', 'various': 'divers', 'accents': 'accents',
+                    'the': 'le', 'and': 'et', 'is': 'est', 'are': 'sont', 'good': 'bon', 'bad': 'mauvais'
+                },
+                'de': {
+                    'hello': 'hallo', 'hi': 'hallo', 'welcome': 'willkommen', 'to': 'zu', 'our': 'unser',
+                    'advanced': 'fortgeschritten', 'text': 'text', 'speech': 'sprache', 'converter': 'konverter',
+                    'this': 'diese', 'demonstration': 'demonstration', 'shows': 'zeigt', 'how': 'wie',
+                    'you': 'sie', 'can': 'können', 'use': 'verwenden', 'different': 'verschiedene',
+                    'voices': 'stimmen', 'with': 'mit', 'various': 'verschiedene', 'accents': 'akzente',
+                    'the': 'der', 'and': 'und', 'is': 'ist', 'are': 'sind', 'good': 'gut', 'bad': 'schlecht'
+                }
+            }
         };
-        if (translations[sourceLang] && translations[sourceLang][targetLang]) {
-            return translations[sourceLang][targetLang];
+
+        if (wordTranslations[sourceLang] && wordTranslations[sourceLang][targetLang]) {
+            const dictionary = wordTranslations[sourceLang][targetLang];
+            const words = text.toLowerCase().split(/\s+/);
+            const translatedWords = words.map(word => {
+                // Remove punctuation for lookup
+                const cleanWord = word.replace(/[.,!?;:]/g, '');
+                return dictionary[cleanWord] || word;
+            });
+            return translatedWords.join(' ');
         }
-        return `[Simulated translation to ${getLanguageName(targetLang)}]: ${text}`;
+        
+        return `[Translation to ${getLanguageName(targetLang)}]: ${text}`;
     }
+
 
     // Helper function to get language name from code
     function getLanguageName(code) {
