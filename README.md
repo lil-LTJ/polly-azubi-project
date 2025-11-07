@@ -139,6 +139,11 @@ Debugging Steps
 - Verify Terraform deployment outputs
 - Consult AWS documentation for individual services
 
+📄Final project image
+- https://drive.google.com/file/d/1B1v35HzeibAVCsB0olx1s5qgTGc610lk/view?usp=drive_link
+
+
 📄 License
 This project is for educational and demonstration purposes. Please review AWS service terms and pricing before production use.
 
+End
